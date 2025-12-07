@@ -1,0 +1,8 @@
+{
+  "name": "Hotel MKR Receptionist",
+  "description": "A multilingual AI receptionist for Hotel MKR in Puri, Odisha, capable of speaking Odia, Hindi, Bangla, and English.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
