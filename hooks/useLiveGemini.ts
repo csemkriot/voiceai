@@ -7,7 +7,8 @@ import { createBlob, decodeAudioData, decodeBase64String } from '../utils/audioU
 export const useLiveGemini = () => {
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.DISCONNECTED);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isTalking, setIsTalking] = useState(false); // Used for visualizer
+  const [isTalking, setIsTalking] = useState(false); 
+  const [userVolume, setUserVolume] = useState(0); // Track user mic volume (0-1)
 
   // Audio Contexts and Nodes
   const inputAudioContextRef = useRef<AudioContext | null>(null);
@@ -70,6 +71,7 @@ export const useLiveGemini = () => {
     
     // 5. Reset UI State
     setIsTalking(false);
+    setUserVolume(0);
   }, []);
 
   // Helper to completely stop and reset state
@@ -77,24 +79,6 @@ export const useLiveGemini = () => {
     disconnect();
     setStatus(SessionStatus.DISCONNECTED);
   }, [disconnect]);
-
-  const sendTextMessage = useCallback((text: string) => {
-    if (activeSessionRef.current) {
-        try {
-            activeSessionRef.current.send({
-                clientContent: {
-                    turns: [{
-                        role: 'user',
-                        parts: [{ text: text }]
-                    }],
-                    turnComplete: true
-                }
-            });
-        } catch (e) {
-            console.error("Failed to send text message", e);
-        }
-    }
-  }, []);
 
   const connect = useCallback(async () => {
     try {
@@ -197,6 +181,16 @@ export const useLiveGemini = () => {
                 
                 processorRef.current.onaudioprocess = (e) => {
                     const inputData = e.inputBuffer.getChannelData(0);
+                    
+                    // Calculate Volume (RMS) for UI feedback/silence detection
+                    let sum = 0;
+                    for (let i = 0; i < inputData.length; i++) {
+                        sum += inputData[i] * inputData[i];
+                    }
+                    const rms = Math.sqrt(sum / inputData.length);
+                    // Normalize roughly for UI (RMS of speech usually 0.01 - 0.5)
+                    setUserVolume(Math.min(1, rms * 10));
+
                     const pcmBlob = createBlob(inputData);
                     
                     // Send to Gemini
@@ -301,6 +295,6 @@ export const useLiveGemini = () => {
     disconnect: stopSession, 
     errorMessage,
     isTalking,
-    sendTextMessage
+    userVolume
   };
 };
