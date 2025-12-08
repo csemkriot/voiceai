@@ -6,6 +6,8 @@
 
 An AI-powered voice receptionist for Hotel MKR in Puri, Odisha. Built with React, TypeScript, and Google's Gemini Live API with native audio support.
 
+🔗 **Live Demo:** [https://mkrvoiceai.vercel.app/](https://mkrvoiceai.vercel.app/)
+
 ## Features
 
 - 🎙️ Real-time voice conversation with AI receptionist "Anjali"
